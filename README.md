@@ -96,7 +96,9 @@ As classes usam somente a API padrão `java.sql` durante a compilação. O drive
 - compilacao com `-Xlint:all`, sem avisos;
 - oito verificacoes do motor de prioridade aprovadas;
 - verificacao do resumo com uma ocorrencia de cada prioridade aprovada;
-- carregamento do driver Oracle confirmado.
+- carregamento do driver Oracle confirmado;
+- scripts de criacao e dados executados no Oracle FIAP;
+- CRUD dos quatro DAOs e persistencia do historico executados com sucesso.
 
 Os arquivos auxiliares usados nessa validacao nao fazem parte do repositorio final, mantendo somente os entregaveis solicitados pela atividade.
 
@@ -131,4 +133,6 @@ O `Main`:
 
 - Compilação com Java 17: executada localmente.
 - Testes das regras sem banco: 8 de 8 testes do motor e 1 de 1 teste do resumo aprovados.
-- Execução no Oracle: requer as credenciais pessoais nas variáveis de ambiente e acesso ao banco FIAP.
+- Execução no Oracle FIAP: aprovada em 21/09/2026.
+- Estado confirmado depois do teste: 2 equipes, 4 trechos, 3 intervencoes e 2 relatorios persistidos.
+- O relatório mais recente registrou 2 urgentes, 1 crítico, 1 atenção e 1 normal durante a demonstração do CRUD.
