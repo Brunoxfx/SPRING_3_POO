@@ -1,8 +1,8 @@
-# MOTIVA — Sprint 3 de Programacao Orientada a Objetos
+# MOTIVA - Sprint 3 de Programação Orientada a Objetos
 
-Sistema Java puro para monitorar a vegetacao em trechos de rodovia, definir prioridades de intervencao e persistir os dados e o historico de relatorios em um banco Oracle por meio de JDBC.
+Aplicação Java para monitorar a vegetação em trechos de rodovia, indicar o tipo de intervenção necessário e manter o histórico dos relatórios em um banco de dados Oracle.
 
-Esta entrega evolui a Sprint 2: as regras de prioridade, a heranca das intervencoes, o polimorfismo e o monitoramento IoT foram preservados. A Sprint 3 acrescenta conexao com banco, scripts SQL, records de persistencia e quatro DAOs com CRUD completo.
+O projeto continua o trabalho da Sprint 2. A hierarquia de intervenções, o monitoramento IoT e as regras de prioridade foram mantidos, agora com persistência por JDBC.
 
 ## Equipe
 
@@ -14,20 +14,27 @@ Esta entrega evolui a Sprint 2: as regras de prioridade, a heranca das intervenc
 | Guilherme de Freitas Salgado | RM 562494 |
 | Vinicius Ribeiro Dias | RM 566468 |
 
-## Requisitos atendidos
+## Funcionalidades implementadas
 
-- Java 17 e JDBC puro, sem Spring ou JPA.
-- Driver Oracle `ojdbc17.jar` na pasta `lib`.
-- Carregamento explicito de `oracle.jdbc.driver.OracleDriver`, conforme a referencia da atividade.
-- Scripts próprios para criação das tabelas e inclusão de dados de teste.
-- `ConexaoBD` no padrão Singleton.
-- `EquipeManutencaoDAO`, `TrechoRodoviaDAO`, `IntervencaoOperacionalDAO` e `RelatorioPrioridadeDAO`.
-- Todos os DAOs possuem `inserir`, `buscarPorId`, `listarTodas`, `atualizar` e `deletar`.
-- Consultas parametrizadas com `PreparedStatement` e fechamento automático de `PreparedStatement` e `ResultSet`.
-- Records para representar os registros persistidos.
-- Relatório exibido no console e salvo no Oracle.
-- `Main` demonstrando conexão, CRUD dos quatro DAOs e consulta do histórico.
-- Regras da Sprint 2 e das quatro faixas de prioridade validadas antes da entrega.
+- cadastro e consulta de equipes de manutenção;
+- cadastro de trechos com altura da vegetação, ambiente e risco operacional;
+- registro das intervenções de roçada manual, roçada mecanizada e pulverização;
+- monitoramento de trechos por sensor IoT;
+- classificação dos trechos em urgente, crítico, atenção ou normal;
+- geração do relatório de prioridades no console;
+- gravação e consulta do histórico de relatórios no Oracle;
+- operações de inserir, buscar, listar, atualizar e excluir para todas as entidades persistidas.
+
+## Implementação técnica
+
+- Java 17;
+- JDBC puro, sem Spring ou JPA;
+- driver Oracle `ojdbc17.jar` na pasta `lib`;
+- conexão centralizada pela classe `ConexaoBD`, no padrão Singleton;
+- DAOs separados para equipe, trecho, intervenção e relatório;
+- records usados para transportar os dados entre o banco e a aplicacao;
+- comandos SQL parametrizados com `PreparedStatement`;
+- fechamento automático de `PreparedStatement` e `ResultSet` com `try-with-resources`.
 
 ## Regras de prioridade
 
@@ -38,7 +45,7 @@ Esta entrega evolui a Sprint 2: as regras de prioridade, a heranca das intervenc
 | Vegetação entre 40 cm e 79,9 cm | ATENÇÃO | Pulverização |
 | Vegetação abaixo de 40 cm | NORMAL | Sem intervenção |
 
-## Estrutura
+## Estrutura do projeto
 
 ```text
 .
@@ -50,23 +57,40 @@ Esta entrega evolui a Sprint 2: as regras de prioridade, a heranca das intervenc
 |   |-- main/
 |   |-- model/
 |   `-- service/
-|-- seu-script-criacao.sql
-|-- seu-script-dados.sql
+|-- bd_motiva_criacao.sql
+|-- bd_motiva_dados.sql
 `-- README.md
 ```
 
+### Pacotes
+
+| Pacote | Responsabilidade |
+|---|---|
+| `db` | abertura e fechamento da conexão Oracle |
+| `dao` | comandos de persistência e consultas SQL |
+| `model` | classes do domínio e records do banco |
+| `service` | motor de prioridade e geração do relatório |
+| `main` | demonstração do funcionamento completo |
+
 ## Banco de dados
 
-Execute no Oracle, nesta ordem:
+O banco possui quatro tabelas:
 
-1. `seu-script-criacao.sql` — cria as quatro tabelas, chaves, relacionamentos e restrições;
-2. `seu-script-dados.sql` — insere equipes, quatro trechos, intervenções e um relatório inicial.
+- `TB_EQUIPE_MANUTENCAO`;
+- `TB_TRECHO_RODOVIA`;
+- `TB_INTERVENCAO_OPERACIONAL`;
+- `TB_RELATORIO_PRIORIDADE`.
 
-O script de criação deve ser executado uma única vez em um schema vazio. Ele não contém comandos `DROP`, evitando apagar tabelas ou dados por acidente.
+Para preparar um schema novo, execute os arquivos nesta ordem:
 
-## Configuração segura da conexão
+1. `bd_motiva_criacao.sql` - cria as tabelas, chaves e restrições;
+2. `bd_motiva_dados.sql` - inclui os dados iniciais usados na demonstração.
 
-As credenciais não ficam no código. No PowerShell usado para executar o sistema, configure:
+O arquivo de criação não possui comandos `DROP`. Caso as tabelas já existam, não execute novamente esse arquivo.
+
+## Configuração da conexão
+
+A aplicação lê os dados da conexão pelas seguintes variáveis de ambiente:
 
 ```powershell
 $env:MOTIVA_DB_URL = "jdbc:oracle:thin:@oracle.fiap.com.br:1521:ORCL"
@@ -74,65 +98,59 @@ $env:MOTIVA_DB_USER = "SEU_RM"
 $env:MOTIVA_DB_PASSWORD = "SUA_SENHA"
 ```
 
-Troque somente os valores na sua sessão local. Não grave a senha no README, no código, em prints ou no Git.
+Assim, o usuário e a senha permanecem fora do código-fonte e do repositório.
 
 ## Compilação
 
-O projeto usa records e deve ser compilado com Java 17 ou superior. No PowerShell, dentro da pasta do projeto:
+Com o Java 17 configurado no computador, execute no PowerShell:
 
 ```powershell
-$env:JAVA_HOME = "C:\Users\ansel\.jdks\ms-17.0.18"
-$env:Path = "$env:JAVA_HOME\bin;$env:Path"
-
+java -version
 New-Item -ItemType Directory -Force out | Out-Null
 javac -encoding UTF-8 -d out (Get-ChildItem -Recurse src -Filter *.java).FullName
 ```
 
-As classes usam somente a API padrão `java.sql` durante a compilação. O driver é incluído no classpath na execução, quando a conexão Oracle é aberta.
+## Execução
 
-## Validacao realizada antes da entrega
-
-- compilacao de todos os fontes com Java 17;
-- compilacao com `-Xlint:all`, sem avisos;
-- oito verificacoes do motor de prioridade aprovadas;
-- verificacao do resumo com uma ocorrencia de cada prioridade aprovada;
-- carregamento do driver Oracle confirmado;
-- scripts de criacao e dados executados no Oracle FIAP;
-- CRUD dos quatro DAOs e persistencia do historico executados com sucesso.
-
-Os arquivos auxiliares usados nessa validacao nao fazem parte do repositorio final, mantendo somente os entregaveis solicitados pela atividade.
-
-## Execução completa com Oracle
-
-Depois de executar os dois scripts e configurar as três variáveis de ambiente:
+Depois de configurar as variáveis de ambiente e preparar o banco:
 
 ```powershell
 java -cp "out;lib\ojdbc17.jar" br.com.motiva.main.Main
 ```
 
-O `Main`:
+Durante a execução, o `Main`:
 
-1. abre a conexão;
-2. demonstra inserir, buscar, listar e atualizar uma equipe;
-3. demonstra o CRUD de trecho e intervenção;
-4. demonstra o CRUD de relatório com um registro temporário;
-5. gera o relatório com todos os trechos e salva o resultado;
-6. consulta o histórico;
-7. remove apenas os registros temporários criados pela demonstração;
-8. mantém o relatório gerado no histórico e fecha a conexão.
+1. abre a conexão com o Oracle;
+2. demonstra o CRUD de equipe de manutenção;
+3. demonstra o CRUD de trecho de rodovia;
+4. demonstra o CRUD de intervenção operacional;
+5. demonstra o CRUD de relatório;
+6. gera e salva um novo relatório de prioridades;
+7. consulta o histórico de relatórios;
+8. remove os registros temporários da demonstração;
+9. fecha a conexão.
 
 ## Tratamento de erros
 
-- Se alguma variável de ambiente estiver ausente, `ConexaoBD` informa exatamente qual configuração falta.
-- Se o driver não estiver no classpath, a aplicação informa que `lib/ojdbc17.jar` deve ser adicionado.
-- Erros SQL são apresentados no console com a mensagem do Oracle.
-- `PreparedStatement` impede a concatenação direta de valores nas consultas.
-- Os recursos JDBC são fechados com `try-with-resources`; a conexão compartilhada é fechada no `finally` do `Main`.
+- configurações ausentes são informadas pela `ConexaoBD`;
+- erros do Oracle são exibidos no console;
+- os valores das consultas são enviados por parâmetros;
+- a conexão é fechada no bloco `finally` do `Main`;
+- as chaves estrangeiras protegem os relacionamentos entre os registros.
 
-## Situação da validação
+## Resultados da validação
 
-- Compilação com Java 17: executada localmente.
-- Testes das regras sem banco: 8 de 8 testes do motor e 1 de 1 teste do resumo aprovados.
-- Execução no Oracle FIAP: aprovada em 21/09/2026.
-- Estado confirmado depois do teste: 2 equipes, 4 trechos, 3 intervencoes e 2 relatorios persistidos.
-- O relatório mais recente registrou 2 urgentes, 1 crítico, 1 atenção e 1 normal durante a demonstração do CRUD.
+Validação realizada com Java 17 e Oracle FIAP em 21/09/2026.
+
+| Verificação | Resultado |
+|---|---|
+| Compilação de todos os fontes | Aprovada |
+| Compilação com `-Xlint:all` | Aprovada, sem avisos |
+| Regras do motor de prioridade | 8 de 8 cenários aprovados |
+| Cálculo do resumo do relatório | Aprovado |
+| Criação das tabelas no Oracle | Aprovada |
+| Inclusão dos dados iniciais | Aprovada |
+| CRUD dos quatro DAOs | Aprovado |
+| Persistência e consulta do relatório | Aprovadas |
+
+Após a execução completa, o banco permaneceu com 2 equipes, 4 trechos, 3 intervenções e 2 relatórios registrados.
